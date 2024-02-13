@@ -92,7 +92,8 @@ search results with hyperlinks to the document they are closest to is essentiall
 I fed the results to the latest GPT model, the outputs were pretty great. The citation of sources is nice. What's nicer
 is being able to re-run the scraper to update things.
 
-Although I may have accidentally taken down the [reactnative.dev](https://reactnative.dev) for a good 10 minutes when I
+Although I may have accidentally taken down the [reactnative.dev docs site](https://reactnative.dev) for a good 10
+minutes when I
 forgot to change the sleep time from 0.01 seconds to 0.5 seconds, as scraping the [fly.io docs](https://fly.io/docs/)
 literally FLEW. 😅 ReactNative docs WOULD HAVE been included in this project, if I wasn't scared attempting to scrape
 them when they came back up would get me blacklisted. I'd be lying if I said I've never taken down a website before, but
@@ -180,7 +181,7 @@ docker run hello-world
 ```
 
 I think ChatGPT had intuited that I'd need to open ports, and so I gave its next suggestion a go, but I was pretty sure
-my next step would be to go to my firewall rules...
+my next step would be to go to my firewall rules since I'm not actually running on metal, and I'm inside a VM...
 
 ```shell
 tristen_harr@hasura-bots-qdrant:~$ sudo ufw allow 22
@@ -221,7 +222,7 @@ Here is an obligatory photo of the insecure dashboard:
 I thought, hooray, we're done for now, I'll just deal with this Monday and buy a domain name then! But I did need to
 get encrypted traffic, no biggie though I'll self-sign, I tell myself. So I self-sign and then go about wading through
 the [authentication configuration info for Qdrant](https://qdrant.tech/documentation/guides/security/). I wasn't worried
-so much about obtaining the even so precious lock 🔒. I know I'm not malicious traffic, I built every part of this from
+so much about obtaining the ever so precious lock 🔒. I know I'm not malicious traffic, I built every part of this from
 the ground up, so no worries there, and I figured openssl would do just fine.
 
 ```shell
@@ -259,9 +260,11 @@ wizard than I am.)
 ## Part Three: Designing the Database
 
 I work for Hasura, and it's a pretty fantastic tool that I love to use when I'm building pretty much anything. This
-project is simple as can be. There are 3 database tables, and one of them is a Hasura ENUM.
+project is simple as can be. There are 3 database tables, and one of them is a Hasura ENUM. I spun up a Postgres
+database on Google's CloudSQL, and created a new project on Hasura Cloud, and got down to work.
 
-The aptly title `COLLECTION_ENUM` tracks the Qdrant collections we currently have in our Qdrant database.
+The first table, the aptly title `COLLECTION_ENUM` tracks the Qdrant collections we currently have in our Qdrant
+database.
 ![Collections](images/collections_ss.png)
 
 ![img.png](images/qdrant_collections.png)
@@ -276,7 +279,11 @@ person on earth who's thoroughly read EVERY piece of documentation. It would be 
 question on the help forum, a bot could search through all of our documentation and attempt to provide a solution from
 what it finds. To do this, we can pull in the top 5 semantically similar documents to the users query, throw them at
 ChatGPT as if the assistant had surfaced them, then ask the assistant to provide a new message solving the query. If the
-user then continues the conversation with the bot by pinging the bots username 
+user then continues the conversation with the bot by pinging the bots username, we will collect the entire
+conversational back-and-forth and feed it to ChatGPT, stripping out any previously surfaced results, and doing a new
+search for the 5 most relevant documents for the conversation. Think of it like a sliding-window over the conversation,
+we don't want to muddle up the bot by providing links to previously surfaced docs because then it'll bias the search to
+resurface those, so instead we track the conversations and the sources separately.
 
 In order to make this work, we need to track the state of each of these forum questions, which we will call threads. So
 we have a thread table, which has the following fields:
@@ -298,21 +305,86 @@ The way the bot has been designed, we want to use an event loop to ensure that t
 we can't afford to wait inside the bot code or put everything in a long-running function since Discord limits the time
 you have until you need to return a response. So we will utilize transactional polling.
 
-## The Backend API
+The messages table has the following fields:
 
-## The Discord Bot API
+* thread_id: The ID of the thread the message belongs to
+* message_id: The ID of the message, also passed through from Discord
+* content: The text body of the message
+* from_bot: A boolean that is True if the message was sent from the bot, otherwise False
+* created_at: The time the message was created
+* updated_at: The last time the message was updated
+* first_message: A boolean that is true if this is the first message send in the thread. The first message always gets a
+  reply
+* mentions_bot: A boolean that is true if this message mentions the bot and should generate a reply
+* sources: A text field that will contain the list of source citations, that's nullable as it will be null at first
+* processed: A boolean that will be used to do a transactional poll and process the messages
 
-### Uploading the documents, the /upload_documents/ endpoint.
+What do I mean by a transactional poll? In the Discord bot event loop that runs every 1 second, I will run the following
+GraphQL. (The resolvers for which have been so graciously provided via Hasura)
 
-The backend API is quite simple.
+```graphql
+mutation ProcessMessages {
+    update_message(where: {from_bot: {_eq: true}, processed: {_eq: false}}, _set: {processed: true}) {
+        returning {
+            content
+            created_at
+            first_message
+            from_bot
+            mentions_bot
+            message_id
+            processed
+            sources
+            thread_id
+            updated_at
+            thread {
+                thread_controller_id
+                author_id
+            }
+        }
+    }
+}
+```
 
-It has **3** endpoints.
+This graphql will drive the event loop, and the astute reader might be starting to see the way things will come
+together. The work-flow will be:
 
-```POST /upload_documents/```
+1. A user posts a message in the help-forum
+2. The Discord bot which is listening for new messages creates a new thread in the database and forwards the messages
+3. The Hasura Engine kicks off an event when a new message is created, which calls the backend written in FastAPI
+4. If the conditions are met to generate a new message, The backend searches the Qdrant embeddings, collects the
+   results, and inserts a new message generated by ChatGPT from the bot with processed = False
+5. The bots event loop picks up the new message and sends it into the Discord channel using the transactional poll
 
-This uploads a document to Qdrant. Originally, I was doing batched, but I typically upload them as I embed them and if I
-was dealing with more documents the script I wrote wouldn't be difficult to parallelize, so I'm not too concerned about
-it. This endpoint basically has this Pydantic model.
+While it might seem complicated and over-built, and perhaps it even is, it's durable, and it will be exceedingly easy to
+add onto in the future. It's also idempotent. For example, say the bot goes offline, when it starts back up, it will
+deliver any undelivered messages that were processing when it went offline. Plus, we've built in a self-feeding training
+loop with the tracking of user votes. It'll be pretty simple to collect the message threads after they've been solved,
+and use them as future training data to fine-tune a GPT model.
+
+Of course, I also added a few bells and whistles inside the bot and some fancy commands as well, but that's the gist of
+the project.
+
+## Part Four: The Backend API
+
+Our backend API has **3 endpoints**.
+
+They are:
+
+1. `/upload_documents` A endpoint to upload a document to Qdrant.
+2. `/new_message_event` A endpoint that Hasura calls when it gets a new message.
+3. `/search` A extra endpoint to provide a command to simply vector-search the sources without ChatGPT
+
+I'll now go over each endpoint, and share a bit of code.
+
+### The `/upload_documents` Endpoint
+
+Originally the documents were a list that I uploaded as a batch, and while I could've used uuids in
+the [Qdrant vector database connector](https://github.com/hasura/ndc-qdrant) I have been working on I made the ID's
+integers since I had to choose a default string or integer, and I happened to choose integer. However, I didn't like
+just randomly generating an integer like you would with uuid's since I'd likely end up with collisions, so the IDs ended
+up being chronological, so you pass the endpoint a single document, it will chunk it and upload as many points as it
+takes to fully embed the document and return the ID the next point should use. Inefficient, sure, but it gets the job
+done, and it's pretty simple to fix up into a batch endpoint later.
 
 ```python
 DocumentSources = Literal[
@@ -342,67 +414,12 @@ class UploadDocumentsRequest(BaseModel):
     document: CreateDocumentForm
 ```
 
-Originally the documents were a list, but because I wanted chronological ID's I purposefully designed it to go one at a
-time for now, and the API endpoint returns the ID of the next point. Inefficient, absolutely, but it got the job done,
-and it's easy enough to adjust.
-
-The upload_documents handler is pretty darn straight-forward. Can't get much simpler. We chunk the documents into sizes
-the embedder can handle then embed each document sequentially, again using that little hack. I could've used uuids but
-in the [Qdrant vector database connector](https://github.com/hasura/ndc-qdrant) I have been working on I made the ID's
-integers since I had to choose a default string or integer, and I chose integer. Here's the code for the upload
-documents endpoint.
-
-```python
-from models import *
-from utilities import *
-from constants import *
-from qdrant_client.http.models import Distance, VectorParams, PointStruct
-from qdrant_client.http.exceptions import UnexpectedResponse
-
-
-async def do_upload_documents(documents: UploadDocumentsRequest):
-    collection = documents.collection
-    # TODO: I still need to create a client-pool at the app level
-    qdrant_client = get_qdrant_client()
-    openai_client = get_openai_client()
-    try:
-        await qdrant_client.get_collection(collection_name=collection)
-    except UnexpectedResponse:
-        await qdrant_client.create_collection(
-            collection_name=collection,
-            vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE)
-        )
-    doc = documents.document
-    chunks = chunk_document(doc.body)
-    offset = 0
-    initial_id = doc.uid
-    for c in chunks:
-        embed = await openai_client.embeddings.create(input=c, model=OPENAI_EMBEDDING_MODEL)
-        vector = embed.data[0].embedding
-        parent = None
-        if offset > 0:
-            parent = initial_id + offset - 1
-        await qdrant_client.upload_points(collection_name=collection,
-                                          points=[PointStruct(
-                                              id=initial_id + offset,
-                                              vector=vector,
-                                              payload={
-                                                  "source": doc.source,
-                                                  "parent": parent,
-                                                  "tags": doc.tags,
-                                                  "url": doc.url,
-                                                  "body": c
-                                              }
-                                          )])
-        offset += 1
-    return offset
-```
-
 I ran a script that dutifully uploaded a bunch of my scraped docs. I was very tired at this point, as I actually built
 the API first it was probably around midnight, this was the deployment step and I needed to re-scrape things because for
 some reason my script was downloading some images and putting the ENTIRE b64 string into the encoder which was obviously
 making the documents much larger than they should've been. (I say some reason, when in reality we all know when a
-programmer says that they are basically saying "I did this")
+programmer says that they are basically saying "I did this because I was dumb then and didn't know better, but now I'm
+not as dumb")
 
 ```python
 import json
