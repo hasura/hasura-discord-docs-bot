@@ -1,0 +1,6 @@
+[submodule "hasura_discord_backend"]
+	path = hasura_discord_backend
+	url = https://github.com/hasura/hasura_discord_backend.git
+[submodule "hasura_discord_bot"]
+	path = hasura_discord_bot
+	url = https://github.com/hasura/hasura_discord_bot.git

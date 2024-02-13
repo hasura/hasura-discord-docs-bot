@@ -1,0 +1,327 @@
+    1  ls
+    2  cd /var/www/html/.well-known/acme-challenge
+    3  ls
+    4  sudo apt-get update
+    5  docker
+    6  cat /etc/os-release
+    7  uname -r
+    8  lscpo
+    9  lscpu
+   10  df -h
+   11  sudo apt install docker.io
+   12  sudo systemctl enable --now docker
+   13  sudo usermod -aG docker $user
+   14  sudo usermod -aG docker $USER
+   15  newgrp docker
+   16  docker --version
+   17  docker run hello-world
+   18  sudo ufw allow 22
+   19  docker pull qdrant/qdrant
+   20  docker run -p 6333:6333 -p 6334:6334     -v $(pwd)/qdrant_storage:/qdrant/storage:z     qdrant/qdrant
+   21  ls
+   22  sudo apt-get install openssl
+   23  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=35.184.153.33"
+   24  docker run -d -p 6333:6333 -p 6334:6334     -v /path/to/cert.pem:/etc/qdrant/cert.pem     -v /path/to/key.pem:/etc/qdrant/key.pem     -e QDRANT__SERVICE__ENABLE_TLS=true     -e QDRANT__TLS__CERT=/etc/qdrant/cert.pem     -e QDRANT__TLS__KEY=/etc/qdrant/key.pem     qdrant/qdrant
+   25  docker ls
+   26  docker --help
+   27  docker images
+   28  docker ps
+   29  lsof -i 8100
+   30  lsof -i 6333
+   31  lsof -i :6333
+   32  docker ps
+   33  docker ps -a
+   34  docker pull qdrant/qdrant
+   35  docker run -p 6333:6333 -p 6334:6334     -v $(pwd)/qdrant_storage:/qdrant/storage:z     qdrant/qdrant
+   36  ls
+   37  mkdir qdrant
+   38  ls
+   39  cd qdrant
+   40  touch config.yaml
+   41  vi config.yaml
+   42  ls
+   43  cd ..
+   44  ls
+   45  cd qdrant
+   46  vi config.yaml
+   47  ls
+   48  cd ..
+   49  ls
+   50  touch docker-compose.yaml
+   51  docker-compose up
+   52  ls
+   53  vi docker-compose.yaml
+   54  sudo curl -L https://github.com/docker/compose/releases/download/1.25.3/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+   55  sudo chmod +x /usr/local/bin/docker-compose
+   56  docker-compose --version
+   57  docker compose up
+   58  docker-compose up
+   59  ls
+   60  vi docker-compose.yaml
+   61  docker-compose up
+   62  vi docker-compose.yaml
+   63  docker-compose up
+   64  vi docker-compose.yaml
+   65  docker-compose up
+   66  ls
+   67  vi docker-compose.yaml
+   68  docker-compose up
+   69  docker-compose up --build
+   70  clear
+   71  docker-compose up
+   72  vi docker-compose.yaml
+   73  docker-compose up
+   74  ls
+   75  pwd
+   76  cd qdrant
+   77  pwd
+   78  cd ..
+   79  ls
+   80  pwd
+   81  vi docker-compose.yaml
+   82  docker-compose up
+   83  docker compose down
+   84  ls
+   85  docker compose down
+   86  docker-compose down
+   87  docker-compose up
+   88  ls
+   89  cd qdrant
+   90  ls
+   91  cat config.yaml
+   92  ls
+   93  cd ..
+   94  vi docker-compose.yaml
+   95  docker-compose up
+   96  docker compose down
+   97  docker-compose up
+   98  vi docker-compose.yaml
+   99  docker-compose up
+  100  vi docker-compose.yaml
+  101  docker-compose up
+  102  ls
+  103  cd qdrant
+  104  cd ..
+  105  ls
+  106  cd qdrant
+  107  vi config.yaml
+  108  docker-compose up
+  109  ls
+  110  cd ..
+  111  docker-compose up
+  112  ls
+  113  vi docker-compose.yaml
+  114  docker-compose up
+  115  ls
+  116  cat docker-compose.yaml
+  117  cd qdrant
+  118  cat config.yaml
+  119  ls
+  120  cd ..
+  121  ls
+  122  vi docker-compose.yaml
+  123  docker-compose down
+  124  docker-compose up
+  125  ls
+  126  vi docker-compose.yaml
+  127  docker-compose up
+  128  ls
+  129  cd qdrant
+  130  ls
+  131  vi config.yaml
+  132  openssl rand -hex 8
+  133  openssl rand -hex 16
+  134  openssl rand -hex 32
+  135  ls
+  136  vi config.yaml
+  137  docker-compose up
+  138  ls
+  139  cd ..
+  140  ls
+  141  docker-compose up
+  142  ls
+  143  cat cert.pem
+  144  docker-compose up
+  145  ls
+  146  cat key.pem
+  147  docker-compose up
+  148  ls
+  149  mkdir old_tls
+  150  mv cert.pem old_tls/cert.pem
+  151  ls
+  152  mv key.pem old_tls/key.pem
+  153  ls
+  154  sudo apt-get install certbot
+  155  sudo certbot certonly --manual --preferred-challenges http -d 35.184.153.33
+  156  sudo certbot certonly --manual -d hasura-bots.com -d www.hasura-bots.com
+  157  docker-compose up
+  158  lsd
+  159  ls
+  160  rm cert.pem
+  161  ls
+  162  rm -f cert.pem
+  163  del cert.pem
+  164  delete cert.pem
+  165  ls
+  166  rm cert.pem
+  167  rmdir cert.pem
+  168  ls
+  169  rmdir key.pem
+  170  ls
+  171  cd old_tls
+  172  ls
+  173  cd ..
+  174  ls
+  175  sudo certbot certonly --manual -d hasura-bots.com -d www.hasura-bots.com
+  176  ls
+  177  cat docker-compose.yaml
+  178  ls
+  179  vi docker-compose.yaml
+  180  ls
+  181  mkdir nging
+  182  rmdir nging
+  183  ls
+  184  mkdir nginx
+  185  ls
+  186  cd nxinx
+  187  cd nginx
+  188  vi default.conf
+  189  cd ..
+  190  ls
+  191  docker-compose up -d nginx
+  192  docker-compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot --email tristen.harr@hasura.io --agree-tos --no-eff-email -d hasura-bots.com
+  193  docker-compose up -d nginx
+  194  docker-compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot --email tristen.harr@hasura.io --agree-tos --no-eff-email -d hasura-bots.com
+  195  ls
+  196  cd certbot
+  197  ls
+  198  cd www
+  199  ls
+  200  cd ..
+  201  ls
+  202  cd conf
+  203  ls
+  204  cd ..
+  205  ls
+  206  cd ..
+  207  ls
+  208  cd ..
+  209  ls
+  210  cd ..
+  211  ls
+  212  cd www
+  213  cd var
+  214  ls
+  215  cd www
+  216  ls
+  217  cd ..
+  218  ls
+  219  cd user
+  220  ls
+  221  cd home
+  222  ls
+  223  cd tristen_harr
+  224  ls
+  225  cat docker-compose.yaml
+  226  ls
+  227  cd nginx
+  228  lks
+  229  ls
+  230  cat default.conf
+  231  cd ..
+  232  docker compose up
+  233  docker-compose up
+  234  ls
+  235  cd certbot
+  236  ls
+  237  cd www
+  238  ls
+  239  cd ..
+  240  ls
+  241  cd conf
+  242  ls
+  243  cd renewal-hooks
+  244  ls
+  245  cd ..
+  246  ls
+  247  cd ..
+  248  ls
+  249  cd /etc
+  250  ls
+  251  cd letsencrypt
+  252  ls
+  253  cd keys
+  254  ls
+  255  cd keys
+  256  ls
+  257  sudo cd keys
+  258  ls
+  259  ls keys
+  260  sudo ls keys
+  261  ls
+  262  cd ..
+  263  ls
+  264  cd home
+  265  ls
+  266  cd tristen_harr
+  267  ls
+  268  docker-compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot --email tristen.harr@hasura.io --agree-tos --no-eff-email -d hasura-bots.com
+  269  docker-compose run --rm certbot certificates
+  270  docker-compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot --email tristen.harr@hasura.io --agree-tos --no-eff-email -d hasura-bots.com --force-renewal
+  271  cat docker-compose.yaml
+  272  ls ./certbot/conf/live
+  273  docker-compose down
+  274  sudo rm -rf ./certbot/conf/*
+  275  docker-compose up -d
+  276  docker-compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot --email tristen.harr@hasura.io --agree-tos --no-eff-email -d hasura-bots.com --force-renewal
+  277  docker-compose up -d
+  278  docker compose down
+  279  docker-compose down
+  280  docker-compose up
+  281  ls
+  282  rmdir certbot
+  283  sudo certbot certonly --standalone -d hasura-bots.com --agree-tos -m tristen.harr@hasura.io --preferred-challenges http
+  284  docker-compose up
+  285  ls
+  286  cat docker-compose.yaml
+  287  vi docker-compose.yaml
+  288  docker-compose up
+  289  cat docker-compose.yaml
+  290  ls
+  291  cd nginx
+  292  ls
+  293  cat default.conf
+  294  cd ..
+  295  ls
+  296  vi docker-compose.yaml
+  297  docker compose up nginx --build
+  298  docker-compose up nginx
+  299  ls
+  300  cat docker-compose.yaml
+  301  ls
+  302  cd certbot
+  303  ls
+  304  cd www
+  305  ls
+  306  cd ..
+  307  ls
+  308  cd /etc/certbot
+  309  cd /etc
+  310  ls
+  311  cd ..
+  312  ls
+  313  cd home
+  314  ls
+  315  cd tristen_harr
+  316  ls
+  317  cat docker-compose.yaml
+  318  /etc/letsencrypt/live/hasura-bots.com/fullchain.pem
+  319  cat /etc/letsencrypt/live/hasura-bots.com/fullchain.pem
+  320  sudo cat /etc/letsencrypt/live/hasura-bots.com/fullchain.pem
+  321  sudo vi /etc/letsencrypt/live/hasura-bots.com/fullchain.pem
+  322  sudo vi /etc/letsencrypt/live/hasura-bots.com/privkey.pem
+  323  sudo cd /etc/letsencrypt/live/hasura-bots.com/
+  324  ls
+  325  sudo su
+  326  ls
+  327  history > history.txt
