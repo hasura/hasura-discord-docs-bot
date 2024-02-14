@@ -144,8 +144,7 @@ I deployed Qdrant on an E2-medium with 4GB RAM and 2vCPUs and slapped a 20TB SSD
 pretty basic Debian-12 bookworm VM. I was trying to be as lazy as I possibly could about it and not even register a
 domain, and I would've got away with it too, if it weren't for that meddling Qdrant client being picky about rejecting
 self-signed certs, but in the end, I did suck it up and register a domain name, add the DNS records, and get signed by a
-CA, as seen by the aforementioned site: https://hasura-bots.com/dashboard. (TLDR: I used certbot with Let's Encrypt,
-and have nginx reverse-proxying.)
+CA, as seen by the aforementioned site: https://hasura-bots.com/dashboard.
 
 I guess we should start from the beginning, thankfully I pulled down the command history to do just that
 via `history > commands.txt`
@@ -241,33 +240,37 @@ a http request yelled at me about the certs. Oops.
 The problem was that the client didn't like that I'd self-signed and didn't have a CA, which came back to bite me, when
 ultimately Let's Encrypt then refused to sign a certificate with the CA name pointed at an IP address. So I gave
 in and did things properly and bought a domain [hasura-bots.com](https://hasura-bots.com/dashboard) then configured the
-Cloud DNS with an A record pointing at my VM's public IP. ![DNS routing](images/dns_routing.png)
+Cloud DNS with an A record pointing at my VM's public IP.
 
-Then I did the certbot challenges, and properly set things up. In the end, ChatGPT did spit out a fancy docker-compose
-that seemed to spin things up and supposedly would renew the certs for me. Although I still probably ought to go back
-and reduce that TTL, there's always more to do in retrospect isn't there? Oh well, for now it'll stay short in case I
-need to make changes, or at least that's what I'll tell myself, so I can sleep at night.
+![DNS routing](images/dns_routing.png)
 
-In the end though, database deployment accomplished! Boss battle ends in victory, XP and blog-post fodder galore!
+Then I did the certbot challenges to get a certificate that was signed by a CA. In the end, ChatGPT did spit out a fancy
+docker-compose that seemed to spin things up and supposedly would renew the certs for me. Although I still probably
+ought to go back and reduce that TTL, there's always more to do in retrospect isn't there? Oh well, for now it'll stay
+short in case I need to make changes, or at least that's what I'll tell myself, so I can sleep at night.
+
+Database deployment accomplished! Boss battle ends in victory, XP and blog-post fodder galore!
 
 (All in all I'm making this sound much easier than it actually was. No matter how anybody makes it sound, this stuff
 isn't easy as evidenced by the commands.txt file which I dumped my command line history to when I started writing this
 post, it took me 327 individual commands to complete this task, although it's mostly still `ls` and `cd some_dir`.
 Deploying the database for production is oftentimes like the final boss battle of a project in my opinion, especially if
 it's a database you've never deployed before. Anyone who tells you it's easy is either lying, or a much higher level
-wizard than I am.)
+wizard than I am, and FYI using a fully-managed DBaaS doesn't count as deploying a database!)
 
-## Part Three: Designing the Database
+## Part Three: Designing the PostgreSQL Database
 
 I work for Hasura, and it's a pretty fantastic tool that I love to use when I'm building pretty much anything. This
-project is simple as can be. There are 3 database tables, and one of them is a Hasura ENUM. I spun up a Postgres
-database on Google's CloudSQL, and created a new project on Hasura Cloud, and got down to work.
+project is simple as can be. There are 5 database tables, and one of them is a Hasura ENUM. I spun up a Postgres
+database on Google's CloudSQL, and created a new project on Hasura Cloud, and got down to work. This database was much
+easier to deploy, just a few button clicks.
 
 The first table, the aptly title `COLLECTION_ENUM` tracks the Qdrant collections we currently have in our Qdrant
 database.
+
 ![Collections](images/collections_ss.png)
 
-![img.png](images/qdrant_collections.png)
+![Qdrant Collections](images/qdrant_collections.png)
 
 The entries in this table map one-to-one with a document collection. The document collections were uploaded using a
 script that took the scraped documents, and utilized an endpoint in the `hasura_discord_backend` directory, but we'll
@@ -357,12 +360,25 @@ together. The work-flow will be:
 
 While it might seem complicated and over-built, and perhaps it even is, it's durable, and it will be exceedingly easy to
 add onto in the future. It's also idempotent. For example, say the bot goes offline, when it starts back up, it will
-deliver any undelivered messages that were processing when it went offline. Plus, we've built in a self-feeding training
-loop with the tracking of user votes. It'll be pretty simple to collect the message threads after they've been solved,
-and use them as future training data to fine-tune a GPT model.
+deliver any undelivered messages that were processing when it went offline. Plus, it's got a built in self-feeding
+training loop with the tracking of user votes. It'll be pretty simple to collect the message threads after they've been
+solved, and use them as future training data to fine-tune a GPT model.
 
-Of course, I also added a few bells and whistles inside the bot and some fancy commands as well, but that's the gist of
-the project.
+The last two tables I added on after the fact to move some configuration out of a `contstants.py` file that had been
+hard-coded to make it easier for people to run this project themselves.
+
+The configuration table:
+
+* guild_id: The ID of a guild the bot is in
+* logging_channel_id: The ID of the channel the bot should log to for that guild
+* mod_role_id: The ID of that guilds moderator role
+* banned_user_ids: A list of users who are banned from using the bot in this guild
+
+The guild_forums table:
+
+* guild_id: The ID of the guild the bot is in
+* forum_channel_id: The ID of the forum channel that the bot auto-responds in
+* forum_collection: The collection the forum searches
 
 ## Part Four: The Backend API
 
@@ -374,7 +390,7 @@ They are:
 2. `/new_message_event` A endpoint that Hasura calls when it gets a new message.
 3. `/search` A extra endpoint to provide a command to simply vector-search the sources without ChatGPT
 
-I'll now go over each endpoint, and share a bit of code.
+I'll now go over the first two endpoints, which happen to be the most important and share a bit of code.
 
 ### The `/upload_documents` Endpoint
 
@@ -385,6 +401,8 @@ just randomly generating an integer like you would with uuid's since I'd likely 
 up being chronological, so you pass the endpoint a single document, it will chunk it and upload as many points as it
 takes to fully embed the document and return the ID the next point should use. Inefficient, sure, but it gets the job
 done, and it's pretty simple to fix up into a batch endpoint later.
+
+To do this, first I made some Pydantic models.
 
 ```python
 DocumentSources = Literal[
@@ -414,64 +432,59 @@ class UploadDocumentsRequest(BaseModel):
     document: CreateDocumentForm
 ```
 
-I ran a script that dutifully uploaded a bunch of my scraped docs. I was very tired at this point, as I actually built
-the API first it was probably around midnight, this was the deployment step and I needed to re-scrape things because for
-some reason my script was downloading some images and putting the ENTIRE b64 string into the encoder which was obviously
-making the documents much larger than they should've been. (I say some reason, when in reality we all know when a
-programmer says that they are basically saying "I did this because I was dumb then and didn't know better, but now I'm
-not as dumb")
+Then I designed an endpoint to upload the documents, here's the function that powers things, it's quite simple. To be
+fair, I still need to go and add a client-pool for the Qdrant and OpenAI clients, but for now this will work, and since
+the bot spins down frequently as the API is stateless and hosted on Cloud Run, it might indeed be just fine or perhaps
+even better to do it this way, because if more often than not it's cold-starting the overhead for setting
+up a client-pool is slightly larger than to just open a single connection, ultimately reducing the efficiency.
 
 ```python
-import json
-import requests
+from models import *
+from utilities import *
+from constants import *
+from qdrant_client.http.models import Distance, VectorParams, PointStruct
+from qdrant_client.http.exceptions import UnexpectedResponse
 
 
-def upload_docs(API_URL, API_KEY, docs_JSON, collection, tags):
-    with open(docs_JSON, "r") as f:
-        data = json.load(f)
-    i = 0
-    doc_set = set()
-    print(f"There are {len(data)} docs")
-    for k, v in data.items():
-        if v in doc_set:
-            continue
-        else:
-            doc_set.add(v)
-        response = requests.request(
-            method="POST",
-            url=f"{API_URL}/upload_documents/",
-            headers={
-                "X-API-KEY": API_KEY
-            },
-            data=json.dumps(
-                {
-                    "collection": collection,
-                    "document":
-                        {
-                            "body": v,
-                            "source": tags[0],
-                            "tags": tags,
-                            "url": k,
-                            "uid": i
-                        }
-                }
-            )
+async def do_upload_documents(documents: UploadDocumentsRequest):
+    collection = documents.collection
+    qdrant_client = get_qdrant_client()
+    openai_client = get_openai_client()
+    try:
+        await qdrant_client.get_collection(collection_name=collection)
+    except UnexpectedResponse:
+        await qdrant_client.create_collection(
+            collection_name=collection,
+            vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE)
         )
-        if response.status_code == 200:
-            i += response.json()
-
-
-if __name__ == "__main__":
-    API_URL = "http://localhost:8100"
-    API_KEY = "secret"
-    docs_JSON = "files/v3_docs.json"
-    collection = "v3"
-    tags = ["Docs V3"]
-    upload_docs(API_URL, API_KEY, docs_JSON, collection, tags)
-
+    doc = documents.document
+    chunks = chunk_document(doc.body)
+    offset = 0
+    initial_id = doc.uid
+    for c in chunks:
+        embed = await openai_client.embeddings.create(input=c, model=OPENAI_EMBEDDING_MODEL)
+        vector = embed.data[0].embedding
+        parent = None
+        if offset > 0:
+            parent = initial_id + offset - 1
+        await qdrant_client.upload_points(collection_name=collection,
+                                          points=[PointStruct(
+                                              id=initial_id + offset,
+                                              vector=vector,
+                                              payload={
+                                                  "source": doc.source,
+                                                  "parent": parent,
+                                                  "tags": doc.tags,
+                                                  "url": doc.url,
+                                                  "body": c
+                                              }
+                                          )])
+        offset += 1
+    return offset
 ```
 
-I watched as my API endpoint sang for a while.
+I was able to use this API endpoint to upload the scraped collections from Part One into Qdrant at this point. I watched
+as my API endpoint sang for a while.
 
 ```shell
 INFO:     127.0.0.1:51525 - "POST /upload_documents/ HTTP/1.1" 200 OK
@@ -481,24 +494,232 @@ INFO:     127.0.0.1:51544 - "POST /upload_documents/ HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51549 - "POST /upload_documents/ HTTP/1.1" 200 OK
 ```
 
-So I scraped and uploaded our docs, and a handful of other sites I found that used Docusaurus.
+After a while of the uploads running in the background, I had the collections in Qdrant. 🎉
 
 ![READONLY DASHBOARD](images/readonly_dashboard.png)
 
-## Building the bot
+Next step was to build the endpoint that will do the AI magic, which ultimately is also relatively simple. I really
+enjoy building event driven workflows using Hasura and Hasura events, it makes it easy to break things down into
+bite-sized pieces and makes the code for even complex things read about as easily as you might read a book. Here's the
+code.
 
-Some final thoughts:
+```python
+from models import *
+from utilities import *
+from constants import *
+from uuid import uuid4
 
-Imagine training on github commits. What if you could fast-forward a code-base, from a LLM trained on the commit
-history, to spit out commits? Can you train it on production code written in your companies style, and empower
-developers to completely eliminate boilerplate coding?
 
-ChatGPT is kind of like having a rough version of GPS, or Tesla autopilot, but one that sometimes will just swerve
-directly off a bridge, on a semi-consistent basis but that's totally allowed because it's just to make the "pay
-attention" point stick, so it's a feature and not a bug ya know? 😅
+async def do_new_message_event(data: Event):
+    qdrant_client = get_qdrant_client()
+    openai_client = get_openai_client()
+    message_data = data.event.data.new
+    # If the message is "from the bot" i.e. this same endpoint inserts it, just return. This prevents a recursive event
+    if message_data["from_bot"]:
+        return
+    else:
+        # If this thread warrants a response, we should look up the threads' data.
+        if message_data["first_message"] or message_data["mentions_bot"]:
+            thread_data = await execute_graphql(GRAPHQL_URL,
+                                                GET_THREAD_GRAPHQL,
+                                                {"thread_id": message_data["thread_id"]},
+                                                GRAPHQL_HEADERS)
+            thread = thread_data.get("data", {}).get("thread_by_pk", None)
+            if thread is None:
+                return
+            title = thread.get("title")
+            collection = thread.get("collection")
+            messages = [
+                {"role": "system",
+                 "content": SYSTEM_PROMPT
+                 }
+            ]
+            vector_content = ""
+            for i, message in enumerate(thread.get("messages")):
+                if i == 0:
+                    message["content"] = ROOT_QUERY_FORMAT.format(title=title, content=message["content"])
+                new_message = {
+                    "role": "assistant" if message_data["from_bot"] else "user",
+                    "content": message["content"]
+                }
+                messages.append(new_message)
+                vector_content += new_message["content"] + "\n"
 
-It's only good until it no longer has a map anymore, so if you are following it, and not leading it, I've found its kind
-of like exploring a jungle, with a little robot that knows all about the stuff you know about, but not quite as well as
-you know it. It knows more facts than you, but it doesn't know what any of it means. If you are Skyrim Skill Level
-100 at something and
+                # A shortcoming of this bot is that once the context extends past the embedding limit for the
+                # conversation, the bot will keep re-surfacing the same results but that's not so terrible for now.
+            embed = await openai_client.embeddings.create(input=vector_content, model=OPENAI_EMBEDDING_MODEL)
+            vector = embed.data[0].embedding
+            results = await qdrant_client.search(collection,
+                                                 query_vector=vector,
+                                                 limit=5,
+                                                 with_payload=["url", "body"])
+            # Construct the formatted inputs for the AI model
+            formatted_text = ""
+            search_links = ""
+            for i, result in enumerate(results):
+                formatted_text += RAG_FORMATTER.format(num=i + 1,
+                                                       url=result.payload["url"],
+                                                       score=result.score,
+                                                       body=result.payload["body"])
+                search_links += SEARCH_FORMATTER.format(num=i + 1,
+                                                        score=result.score,
+                                                        url=result.payload["url"])
+            result_text = ASSISTANT_RESULTS_WRAPPER.format(content=formatted_text)
+            messages.append({
+                "role": "assistant",
+                "content": result_text
+            })
+            # Generate the results using OpenAI's API
+            completion = await openai_client.chat.completions.create(
+                model=OPENAI_MODEL,
+                messages=messages
+            )
+            result = completion.choices[0].message.content
+            # Add a message to the thread.
+            variables = {
+                "object": {
+                    "thread_id": message_data["thread_id"],
+                    "message_id": str(uuid4()),
+                    "content": result,
+                    "from_bot": True,
+                    "first_message": False,
+                    "mentions_bot": False,
+                    "sources": search_links,
+                    "processed": False
+                }
+            }
+            await execute_graphql(GRAPHQL_URL,
+                                  INSERT_MESSAGE_GRAPHQL,
+                                  variables,
+                                  GRAPHQL_HEADERS)
+
+```
+
+I set up a Hasura event that would call my API endpoint whenever a new message was inserted into the message table, and
+of course forwarded the headers which I pulled from the environment variables which I stored the backend secret in.
+
+![Insert Data](images/insert_toggle.png)
+
+![img.png](images/event_info.png)
+
+That's pretty much the entire backend API. There is also a search endpoint, that I linked to a slash command to let
+users search the documentation, but if you're interested in that, just read the code.
+
+## Part Five: Building the bot
+
+There are five parts to this, as it took me 5 days to build this bot. What started out as the following flow-chart I
+made on draw.io when this project was just an idea, was finally about to become reality. (Mostly, with some minor
+changes to the original flowchart.)
+
+![The original idea](images/rough_flowchart.png)
+
+Building the bot was much easier than I remembered, which I'm unsure if that had to do with Discord's APIs improving or
+me simply upskilling over the years as the last time I'd built a Discord bot was circa ~2018/2019-ish. I won't go over
+all the code, but I will detail the some of the fun parts.
+
+The main things that mattered are listening to the `on_message` event, and the task loop.
+
+When a new message comes in, we need to create that message in the database to trigger the event in the backend API.
+This is handled by registering a listener that will fire on all messages, and filtering to only handle the messages we
+actually care about.
+
+```python
+@client.event
+async def on_message(message: Message):
+    """
+    Each time a message is sent, this fires.
+
+    :param message: The incoming message
+    :return: The return from the linked handler function
+    """
+    if message.author.id in BANNED:
+        await message.channel.send(content=f"Silly <@{message.author.id}>, you've misbehaved and have been BANNED. 🔨")
+        return
+    return await event_on_message(client, message)
+```
+
+Once the message has been sent, it triggers the event on the backend which will create a reply and the transactional
+poll to process messages is performed inside the task loop.
+
+```python
+@tasks.loop(seconds=1, count=None, reconnect=True)
+async def task_loop():
+    """
+    The main task loop.
+
+    This is an event loop that runs every 1 second. It runs a transactional mutation to collect any unpublished messages
+
+    If for some reason the task_loop fails, the message won't get sent. This is not a huge deal, the user can ask again.
+    That shouldn't happen, however, doing this on a transactional poll like this is useful to ensure no more than
+    once delivery, and aim for at least once.
+    :return: The linked task loop
+    """
+    return await execute_task_loop(client)
+```
+
+The task loop makes sure that the replies get handled and sent in the Discord channel.
+
+```python
+from utilities import *
+from constants import *
+import discord
+
+
+async def execute_task_loop(client: discord.Client):
+    """
+    This is the main task loop.
+    :param client: The discord client. (essentially a singleton)
+    :return: None
+    """
+    # Get all tasks
+    result = await execute_graphql(GRAPHQL_URL,
+                                   PROCESS_MESSAGES_GRAPHQL,
+                                   {},
+                                   GRAPHQL_HEADERS)
+    # If False result skip as this was a failure.
+    if not result:
+        return
+    # Collect the list of tasks
+    all_tasks = result["data"]["update_message"]["returning"]
+    for task in all_tasks:
+        thread_id = task["thread_id"]
+        content = task["content"]
+        sources = task["sources"]
+        thread = task["thread"]
+        thread_controller_id = thread["thread_controller_id"]
+        thread_author_id = thread["author_id"]
+        channel = client.get_channel(int(thread_id))
+        controller = await channel.fetch_message(int(thread_controller_id))
+        await send_long_message_in_embeds(channel=channel,
+                                          title=RESPONSE_TITLE,
+                                          message=content)
+        await send_long_message_in_embeds(channel=channel,
+                                          title=RESPONSE_SOURCES_TITLE,
+                                          message=sources,
+                                          color=discord.Color.green())
+        help_controller_message = HELP_CONTROLLER_MESSAGE.format(author=thread_author_id,
+                                                                 bot=client.user.id,
+                                                                 github=GITHUB_LINK)
+        controller = await controller.edit(embed=discord.Embed(title=CONTROLLER_TITLE,
+                                                               description=help_controller_message,
+                                                               color=discord.Color.gold()))
+        await controller.add_reaction(POSITIVE_EMOJI)
+        await controller.add_reaction(NEGATIVE_EMOJI)
+```
+
+There were also a handful of slash commands I added, which running the `/commands` command in the discord server will
+list out the different available commands and what they do.
+
+![Commands List](images/command_list.png)
+
+## Some final thoughts:
+
+I've just finished the first draft of this, and I'm not sure how much editing I'll do to it. Perhaps it'll be better to
+keep it a bit rough-around-the-edges. I had a lot of fun building this, and hopefully it will be of use to our
+community. The code is all OSS, so feel free to run this bot yourself.
+
+If you liked this, and you enjoyed the way I shoved it into a Github README, consider dropping a star on the repo, and
+maybe I can convince my employer to let me write all my blog posts in a README located adjacent to the code.
+
+
 
