@@ -26,7 +26,7 @@ services:
       ## enable debugging mode. It is recommended to disable this in production
       HASURA_GRAPHQL_DEV_MODE: "true"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
-      BACKEND_URL: http://localhost:3000
+      BACKEND_URL: http://hasura_discord_backend:8100
       BACKEND_SECRET: secret
       ## uncomment next line to run console offline (i.e load console assets from server instead of CDN)
       # HASURA_GRAPHQL_CONSOLE_ASSETS_DIR: /srv/console-assets
@@ -71,18 +71,35 @@ services:
       dockerfile: Dockerfile
     environment:
       CLIENT_SECRET: MTIwOTY0ODU0MzA5NTMyNDcxMw.GAWeMy.syb4ezw10FqkFLDJMN_Rmt3_710Ej8IIihg9FA
-
-      SEARCH_ENDPOINT_URL: http://localhost:8100/search/
+      SEARCH_ENDPOINT_URL: http://hasura_discord_backend:8100/search/
       SEARCH_ENDPOINT_API_KEY_HEADER: X-API-KEY
       SEARCH_ENDPOINT_API_KEY: secret
-
       GRAPHQL_URL: http://graphql-engine:8080/v1/graphql
       GRAPHQL_ADMIN_SECRET: secret
-
       GUILD_ID: 1204239405011832883
     depends_on:
       graphql-engine:
         condition: service_healthy
+
+  hasura_discord_backend:
+    build:
+      context: ./hasura_discord_backend
+      dockerfile: Dockerfile
+    ports:
+      - "8100:8100"
+    environment:
+      API_KEY_HEADER_NAME: X-API-KEY
+      API_KEY: secret
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_API_KEY: secret
+      OPENAI_API_KEY: key
+      OPENAI_ORGANIZATION: org
+      OPENAI_MODEL: gpt-4-turbo-preview
+      OPENAI_EMBEDDING_MODEL: text-embedding-3-large
+      VECTOR_SIZE: 3072
+      GRAPHQL_URL: http://graphql-engine:8080/v1/graphql
+      GRAPHQL_ADMIN_SECRET: secret
+      PORT: 8100
 volumes:
   db_data:
   qdrant_data:
