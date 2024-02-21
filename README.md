@@ -10,7 +10,7 @@ This Discord bot provides the ability to search and talk to technical documentat
 
 I needed to write both a README and a blog post so let's double up, such is the life.
 
-If you're more interested in running the bot, see the adjacent SETUP.md file. This is all OSS!
+If you're more interested in running the bot, see the adjacent SETUP.md file.
 
 If you work for or use Hasura, Clickhouse, Turso, Fly.io, or Ionic, this
 bot will be useful to you, so come try it. If you use [Docusaurus](https://docusaurus.io/blog/releases/3.1) then the

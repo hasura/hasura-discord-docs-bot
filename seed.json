@@ -1,0 +1,22 @@
+{
+  "COLLECTION_ENUM": [
+    {
+      "value": "v3"
+    }
+  ],
+  "configuration": [
+    {
+      "guild_id": 1204239405011832883,
+      "logging_channel_id": 1204239405456297995,
+      "mod_role_id": 1209640032747528202,
+      "banned_user_ids": []
+    }
+  ],
+  "guild_forums": [
+    {
+      "guild_id": 1204239405011832883,
+      "forum_channel_id": 1204246613145419806,
+      "forum_collection": "v3"
+    }
+  ]
+}

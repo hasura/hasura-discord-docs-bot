@@ -7,7 +7,7 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./hasura_discord_postgres/data:/docker-entrypoint-initdb.d
     environment:
-      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   graphql-engine:
     image: hasura/graphql-engine:v2.37.0.cli-migrations-v3
     ports:
@@ -17,21 +17,21 @@ services:
       - ./hasura_discord_postgres/postgres/metadata:/hasura-metadata
     environment:
       ## postgres database to store Hasura metadata
-      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: ${POSTGRES_URL}
       ## this env var can be used to add the above postgres database to Hasura as a data source. this can be removed/updated based on your needs
-      PG_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
-      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
+      PG_DATABASE_URL: ${POSTGRES_URL}
+      HASURA_GRAPHQL_DATABASE_URL: ${POSTGRES_URL}
       ## enable the console served by server
       HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
       ## enable debugging mode. It is recommended to disable this in production
       HASURA_GRAPHQL_DEV_MODE: "true"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
-      BACKEND_URL: http://hasura_discord_backend:8100
-      BACKEND_SECRET: secret
+      BACKEND_URL: ${BACKEND_URL}
+      BACKEND_SECRET: ${BACKEND_API_KEY}
       ## uncomment next line to run console offline (i.e load console assets from server instead of CDN)
       # HASURA_GRAPHQL_CONSOLE_ASSETS_DIR: /srv/console-assets
       ## uncomment next line to set an admin secret
-      HASURA_GRAPHQL_ADMIN_SECRET: secret
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
       HASURA_GRAPHQL_METADATA_DEFAULTS: '{"backend_configs":{"dataconnector":{"athena":{"uri":"http://data-connector-agent:8081/api/v1/athena"},"mariadb":{"uri":"http://data-connector-agent:8081/api/v1/mariadb"},"mysql8":{"uri":"http://data-connector-agent:8081/api/v1/mysql"},"oracle":{"uri":"http://data-connector-agent:8081/api/v1/oracle"},"snowflake":{"uri":"http://data-connector-agent:8081/api/v1/snowflake"}}}}'
     depends_on:
       data-connector-agent:
@@ -70,13 +70,14 @@ services:
       context: ./hasura_discord_bot
       dockerfile: Dockerfile
     environment:
-      CLIENT_SECRET: MTIwOTY0ODU0MzA5NTMyNDcxMw.GAWeMy.syb4ezw10FqkFLDJMN_Rmt3_710Ej8IIihg9FA
-      SEARCH_ENDPOINT_URL: http://hasura_discord_backend:8100/search/
-      SEARCH_ENDPOINT_API_KEY_HEADER: X-API-KEY
-      SEARCH_ENDPOINT_API_KEY: secret
-      GRAPHQL_URL: http://graphql-engine:8080/v1/graphql
-      GRAPHQL_ADMIN_SECRET: secret
-      GUILD_ID: 1204239405011832883
+      CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+      SEARCH_ENDPOINT_URL: ${SEARCH_ENDPOINT_URL}
+      SEARCH_ENDPOINT_API_KEY_HEADER: ${BACKEND_API_KEY_HEADER_NAME}
+      SEARCH_ENDPOINT_API_KEY: ${BACKEND_API_KEY}
+      GRAPHQL_URL: ${HASURA_GRAPHQL_URL}
+      GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
+      GUILD_ID: ${GUILD_ID}
+      SYNC_ON_STARTUP: 1
     depends_on:
       graphql-engine:
         condition: service_healthy
@@ -88,17 +89,17 @@ services:
     ports:
       - "8100:8100"
     environment:
-      API_KEY_HEADER_NAME: X-API-KEY
-      API_KEY: secret
-      QDRANT_URL: http://qdrant:6333
-      QDRANT_API_KEY: secret
-      OPENAI_API_KEY: key
-      OPENAI_ORGANIZATION: org
-      OPENAI_MODEL: gpt-4-turbo-preview
-      OPENAI_EMBEDDING_MODEL: text-embedding-3-large
-      VECTOR_SIZE: 3072
-      GRAPHQL_URL: http://graphql-engine:8080/v1/graphql
-      GRAPHQL_ADMIN_SECRET: secret
+      API_KEY_HEADER_NAME: ${BACKEND_API_KEY_HEADER_NAME}
+      API_KEY: ${BACKEND_API_KEY}
+      QDRANT_URL: ${QDRANT_URL}
+      QDRANT_API_KEY: ${QDRANT_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_ORGANIZATION: ${OPENAI_ORGANIZATION}
+      OPENAI_MODEL: ${OPENAI_MODEL}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL}
+      VECTOR_SIZE: ${VECTOR_SIZE}
+      GRAPHQL_URL: ${HASURA_GRAPHQL_URL}
+      GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
       PORT: 8100
 volumes:
   db_data:
