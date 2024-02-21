@@ -1,0 +1,10 @@
+table:
+  name: guild_forums
+  schema: public
+object_relationships:
+  - name: COLLECTION_ENUM
+    using:
+      foreign_key_constraint_on: forum_collection
+  - name: configuration
+    using:
+      foreign_key_constraint_on: guild_id

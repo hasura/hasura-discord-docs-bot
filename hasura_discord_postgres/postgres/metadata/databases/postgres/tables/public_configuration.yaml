@@ -1,0 +1,11 @@
+table:
+  name: configuration
+  schema: public
+array_relationships:
+  - name: guild_forums
+    using:
+      foreign_key_constraint_on:
+        column: guild_id
+        table:
+          name: guild_forums
+          schema: public

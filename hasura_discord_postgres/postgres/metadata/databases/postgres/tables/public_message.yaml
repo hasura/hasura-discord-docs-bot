@@ -1,0 +1,27 @@
+table:
+  name: message
+  schema: public
+object_relationships:
+  - name: thread
+    using:
+      foreign_key_constraint_on: thread_id
+event_triggers:
+  - name: new_message_event
+    definition:
+      enable_manual: false
+      insert:
+        columns: '*'
+    retry_conf:
+      interval_sec: 600
+      num_retries: 3
+      timeout_sec: 600
+    webhook: '{{BACKEND_URL}}'
+    headers:
+      - name: X-API-KEY
+        value_from_env: BACKEND_SECRET
+    request_transform:
+      method: POST
+      query_params: {}
+      template_engine: Kriti
+      url: '{{$base_url}}/new_message_event/'
+      version: 2

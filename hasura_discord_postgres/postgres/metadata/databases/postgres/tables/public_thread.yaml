@@ -1,0 +1,15 @@
+table:
+  name: thread
+  schema: public
+object_relationships:
+  - name: COLLECTION_ENUM
+    using:
+      foreign_key_constraint_on: collection
+array_relationships:
+  - name: messages
+    using:
+      foreign_key_constraint_on:
+        column: thread_id
+        table:
+          name: message
+          schema: public

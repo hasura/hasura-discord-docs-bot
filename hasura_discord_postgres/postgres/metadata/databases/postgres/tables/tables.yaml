@@ -1,0 +1,5 @@
+- "!include public_COLLECTION_ENUM.yaml"
+- "!include public_configuration.yaml"
+- "!include public_guild_forums.yaml"
+- "!include public_message.yaml"
+- "!include public_thread.yaml"

@@ -1,0 +1,88 @@
+version: "3.6"
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./hasura_discord_postgres/data:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_PASSWORD: postgrespassword
+  graphql-engine:
+    image: hasura/graphql-engine:v2.37.0.cli-migrations-v3
+    ports:
+      - "8080:8080"
+    restart: always
+    volumes:
+      - ./hasura_discord_postgres/postgres/metadata:/hasura-metadata
+    environment:
+      ## postgres database to store Hasura metadata
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
+      ## this env var can be used to add the above postgres database to Hasura as a data source. this can be removed/updated based on your needs
+      PG_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
+      ## enable the console served by server
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
+      ## enable debugging mode. It is recommended to disable this in production
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      BACKEND_URL: http://localhost:3000
+      BACKEND_SECRET: secret
+      ## uncomment next line to run console offline (i.e load console assets from server instead of CDN)
+      # HASURA_GRAPHQL_CONSOLE_ASSETS_DIR: /srv/console-assets
+      ## uncomment next line to set an admin secret
+      HASURA_GRAPHQL_ADMIN_SECRET: secret
+      HASURA_GRAPHQL_METADATA_DEFAULTS: '{"backend_configs":{"dataconnector":{"athena":{"uri":"http://data-connector-agent:8081/api/v1/athena"},"mariadb":{"uri":"http://data-connector-agent:8081/api/v1/mariadb"},"mysql8":{"uri":"http://data-connector-agent:8081/api/v1/mysql"},"oracle":{"uri":"http://data-connector-agent:8081/api/v1/oracle"},"snowflake":{"uri":"http://data-connector-agent:8081/api/v1/snowflake"}}}}'
+    depends_on:
+      data-connector-agent:
+        condition: service_healthy
+  data-connector-agent:
+    image: hasura/graphql-data-connector:v2.37.0
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      QUARKUS_LOG_LEVEL: ERROR # FATAL, ERROR, WARN, INFO, DEBUG, TRACE
+      ## https://quarkus.io/guides/opentelemetry#configuration-reference
+      QUARKUS_OPENTELEMETRY_ENABLED: "false"
+      ## QUARKUS_OPENTELEMETRY_TRACER_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/api/v1/athena/health" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333" # Change Qdrant to listen on a different port internally to avoid conflicts with Nginx
+    restart: always
+    volumes:
+      - qdrant_data:/var/lib/qdrant
+      - ./hasura_discord_qdrant/config.yaml:/qdrant/config/config.yaml
+      - ./hasura_discord_qdrant/snapshots:/snapshots # Mount the directory containing snapshots
+    command: >
+      /bin/sh -c "
+      ./qdrant --snapshot /snapshots/v3.snapshot:v3 --force-snapshot
+      "
+  hasura_discord_bot:
+    build:
+      context: ./hasura_discord_bot
+      dockerfile: Dockerfile
+    environment:
+      CLIENT_SECRET: MTIwOTY0ODU0MzA5NTMyNDcxMw.GAWeMy.syb4ezw10FqkFLDJMN_Rmt3_710Ej8IIihg9FA
+
+      SEARCH_ENDPOINT_URL: http://localhost:8100/search/
+      SEARCH_ENDPOINT_API_KEY_HEADER: X-API-KEY
+      SEARCH_ENDPOINT_API_KEY: secret
+
+      GRAPHQL_URL: http://graphql-engine:8080/v1/graphql
+      GRAPHQL_ADMIN_SECRET: secret
+
+      GUILD_ID: 1204239405011832883
+    depends_on:
+      graphql-engine:
+        condition: service_healthy
+volumes:
+  db_data:
+  qdrant_data:

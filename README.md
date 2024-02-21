@@ -10,10 +10,11 @@ This Discord bot provides the ability to search and talk to technical documentat
 
 I needed to write both a README and a blog post so let's double up, such is the life.
 
-If you work for or use Hasura, Clickhouse, Turso, Fly.io, or Ionic. (And more to come soon, see CONTRIBUTING) this
+If you're more interested in running the bot, see the adjacent SETUP.md file. This is all OSS!
+
+If you work for or use Hasura, Clickhouse, Turso, Fly.io, or Ionic, this
 bot will be useful to you, so come try it. If you use [Docusaurus](https://docusaurus.io/blog/releases/3.1) then the
-provided web-scraper should work for you. (Although Algolia has me curious, I found it half-way through this project.
-Does anyone know if it's any good? Can I get it to spit out Markdown?)
+provided web-scraper should work for you, send me your companies docs, and I'll add them to the bot.
 
 I've also always been a production or GTFO kind of person, therefore the database I've deployed for this has a READONLY
 api-key. The bot runs in the [Hasura Discord server](https://discord.gg/hasura). Just use `/commands` in a Discord
@@ -93,12 +94,12 @@ I fed the results to the latest GPT model, the outputs were pretty great. The ci
 is being able to re-run the scraper to update things.
 
 Although I may have accidentally taken down the [reactnative.dev docs site](https://reactnative.dev) for a good 10
-minutes when I
-forgot to change the sleep time from 0.01 seconds to 0.5 seconds, as scraping the [fly.io docs](https://fly.io/docs/)
-literally FLEW. 😅 ReactNative docs WOULD HAVE been included in this project, if I wasn't scared attempting to scrape
-them when they came back up would get me blacklisted. I'd be lying if I said I've never taken down a website before, but
-always on accident, and always because when you web-scrape you have to choose whether you want to be polite and
-patient, or rude but impatient and sometimes my ADHD gets the best of me and I get impatient.
+minutes when I forgot to change the sleep time from 0.01 seconds to 0.5 seconds, as scraping
+the [fly.io docs](https://fly.io/docs/) literally FLEW. 😅 ReactNative docs WOULD HAVE been included in this project, if
+I wasn't scared attempting to scrape them when they came back up would get me blacklisted. I'd be lying if I said I've
+never taken down a website before, but always on accident, and always because when you web-scrape you have to choose
+whether you want to be polite and patient, or rude but impatient and sometimes my ADHD gets the best of me and I get
+impatient.
 
 In the end, I wanted my scraped docs to be as human-readable as possible while also being as bot friendly as possible.
 Even complex tables and things. I ended up with something like this, which I think is pretty nice, notice how even the
@@ -311,7 +312,7 @@ you have until you need to return a response. So we will utilize transactional p
 The messages table has the following fields:
 
 * thread_id: The ID of the thread the message belongs to
-* message_id: The ID of the message, also passed through from Discord
+* message_id: The ID of the message, in this case a UUID, since we insert the message before Discord sends it
 * content: The text body of the message
 * from_bot: A boolean that is True if the message was sent from the bot, otherwise False
 * created_at: The time the message was created
@@ -378,7 +379,7 @@ The guild_forums table:
 
 * guild_id: The ID of the guild the bot is in
 * forum_channel_id: The ID of the forum channel that the bot auto-responds in
-* forum_collection: The collection the forum searches
+* forum_collection: The collection the forum channel searches
 
 ## Part Four: The Backend API
 
@@ -498,6 +499,8 @@ After a while of the uploads running in the background, I had the collections in
 
 ![READONLY DASHBOARD](images/readonly_dashboard.png)
 
+### The `/new_message_event` Endpoint
+
 Next step was to build the endpoint that will do the AI magic, which ultimately is also relatively simple. I really
 enjoy building event driven workflows using Hasura and Hasura events, it makes it easy to break things down into
 bite-sized pieces and makes the code for even complex things read about as easily as you might read a book. Here's the
@@ -615,7 +618,7 @@ changes to the original flowchart.)
 
 Building the bot was much easier than I remembered, which I'm unsure if that had to do with Discord's APIs improving or
 me simply upskilling over the years as the last time I'd built a Discord bot was circa ~2018/2019-ish. I won't go over
-all the code, but I will detail the some of the fun parts.
+all the code, but I will detail some of the fun parts.
 
 The main things that mattered are listening to the `on_message` event, and the task loop.
 

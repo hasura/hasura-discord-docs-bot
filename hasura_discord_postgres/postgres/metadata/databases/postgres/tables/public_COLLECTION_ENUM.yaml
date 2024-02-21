@@ -1,0 +1,19 @@
+table:
+  name: COLLECTION_ENUM
+  schema: public
+is_enum: true
+array_relationships:
+  - name: guild_forums
+    using:
+      foreign_key_constraint_on:
+        column: forum_collection
+        table:
+          name: guild_forums
+          schema: public
+  - name: threads
+    using:
+      foreign_key_constraint_on:
+        column: collection
+        table:
+          name: thread
+          schema: public
