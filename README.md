@@ -687,9 +687,7 @@ The last thing to do is to talk to the bot!
 
 # Some final thoughts
 
-I've just finished the first draft of this, and I'm not sure how much editing I'll do to it. Perhaps it'll be better to keep it a bit rough-around-the-edges. I had a lot of fun building this, and hopefully it will be of use to our
-
-community. The code is all OSS, so feel free to run this bot yourself.
+I've just finished the first draft of this, and I'm not sure how much editing I'll do to it. Perhaps it'll be better to keep it a bit rough-around-the-edges. I had a lot of fun building this, and hopefully it will be of use to our community. The code is all OSS, so feel free to run this bot yourself.
 
 If you liked this, and you enjoyed the way I shoved it into a GitHub README, consider dropping a star on the repo, and maybe I can convince my employer to let me write all my blog posts in a README located adjacent to the code.
 
