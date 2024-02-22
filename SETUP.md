@@ -6,13 +6,13 @@ Let's talk setup. Lucky for you, this bot is pre-made in a way you can run it lo
 
 Please follow these steps **before** you run the `docker-compose up`
 
-## Prerequisites:
+### Prerequisites:
 
 1. You need Docker installed and the Docker Daemon running in the background
 2. You need an OpenAI API Key and Organization ID
 3. You need a Discord Server you want to run the bot in!
 
-## Step 1: Creating a Discord Bot
+### Step 1: Creating a Discord Bot
 
 The very first thing you need to do is create a Discord Application.
 
@@ -22,41 +22,41 @@ The very first thing you need to do is create a Discord Application.
 
 2. Click the "New Application" button.
 
-![New Application](images/new_application.jpeg)
+![New Application](images/setup/new_application.jpeg)
 
 3. Create a name for your bot, agree to the ToS and click Create!
 
-![Name Application](images/name_application.png)
+![Name Application](images/setup/name_application.png)
 
 4. On the Bot tab, turn off "Public Bot", and turn on all the options in "Privileged Gateway Intents"
 
-![Bot Settings](images/bot_settings.png)
+![Bot Settings](images/setup/bot_settings.png)
 
 5. Under the OAuth2 tab, go to the URL Generator, and for scopes select bot, and for bot permissions select
    Administrator. (You can narrow the scopes if you wish, I typically just give my bots Admin especially if I'm planning
    to continue developing on them)
 
-![Bot Scopes](images/set_scopes.png)
+![Bot Scopes](images/setup/set_scopes.png)
 
 6. Copy the generated URL from the bottom of the page, and go into the Discord server you will run the bot in and paste
    it there.
 
-![Generated URL](images/generated_url.png)
+![Generated URL](images/setup/generated_url.png)
 
 7. Click on the URL inside the Discord server, and then follow the prompts to add the bot to the server.
 
-![Add Bot To Server](images/add_bot_to_server.png)
+![Add Bot To Server](images/setup/add_bot_to_server.png)
 
 8. Go back to the Bot page in the Discord Developer Portal and click the Reset Token button.
 
-![Reset Token](images/reset_token.jpeg)
+![Reset Token](images/setup/reset_token.jpeg)
 
 9. Copy the new Token and keep it somewhere safe, you'll need it in a minute! We'll refer to this as the "Discord Bot
    Token" later on.
 
-![Token](images/token.png)
+![Token](images/setup/token.png)
 
-## Step 2: Setting up the Discord Server for the Bot, and updating the database seed data.
+### Step 2: Setting up the Discord Server for the Bot, and updating the database seed data.
 
 The Discord bot comes preloaded with a collection of Hasura's V3 documentation as an example in Qdrant. This collection
 is called the v3 collection.
@@ -101,7 +101,7 @@ will also need the Guild ID.
 Right-click on the Server name, and click "Copy Server ID". My Guild ID for example is: `1204239405011832883`. In
 the `seed.json` file, fill in the above template replacing `YOUR_GUILD_ID` with the Guild Id.
 
-![Server ID](images/server_id.png)
+![Server ID](images/setup/server_id.png)
 
 2. **To get the ID of the Logging Channel**
 
@@ -109,7 +109,7 @@ Pick a text-channel you want the bot to log things to. Right-click on the channe
 channel ID for example is `1204239405456297995`. In the `seed.json` file, fill in the above template
 replacing `YOUR_LOGGING_CHANNEL_ID` with the Channel ID.
 
-![Logging channel](images/logging_channel.png)
+![Logging channel](images/setup/logging_channel.png)
 
 3. **To get the ID of the Forum Channel**
 
@@ -117,17 +117,17 @@ Pick a forum-channel the bot will link to the v3 collection. You can add more fo
 Right-click on the forum and click "Copy Channel ID". My forum channel ID for example is: `1204246613145419806`. In
 the `seed.json` file, fill in the above template replacing `YOUR_V3_FORUM_CHANNEL_ID` with the Channel ID.
 
-![Forum Channel](images/forum_channel.png)
+![Forum Channel](images/setup/forum_channel.png)
 
 4. **To get the Moderator Role ID**
 
-Right click on the server, and go to server settings, then under Roles, right-click a role that you want the bot to
+Right-click on the server, and go to server settings, then under Roles, right-click a role that you want the bot to
 recognize as a moderator, and click "Copy Role ID". My Role ID for example is `1209640032747528202`. In
 the `seed.json` file, fill in the above template replacing `YOUR_MOD_ROLE_ID` with the Channel ID.
 
-![Server Settings](images/server_settings.png)
+![Server Settings](images/setup/server_settings.png)
 
-![Server Moderator Role](images/role_id.png)
+![Server Moderator Role](images/setup/role_id.png)
 
 My `seed.json` which is what ships with the project looks like after being filled out:
 
@@ -168,7 +168,7 @@ python seed.py
 (You could also directly edit the seed.sql file if you wanted, they both achieve the same results. I just find it easier
 to work with JSON than writing SQL COPY bulk insert ops by hand)
 
-## Step 3: Configuring the `.env` file
+### Step 3: Configuring the `.env` file
 
 Create a .env file, making a copy of the `.env.example` file provided.
 
@@ -195,14 +195,14 @@ OPENAI_ORGANIZATION=<ORGANIZATION_ID>
 
 Once you've completed filling out those 4 variables in the `.env` file, you are ready to run the bot!
 
-## Step 4: Running the bot
+### Step 4: Running the bot
 
 Run ```docker-compose up```
 
 It might take a minute or two for everything to startup. You should be able to see the containers inside Docker.
 If things have started successfully, the logging channel should receive a message from your bot.
 
-![Bot Message](images/bot_message.png)
+![Bot Message](images/setup/bot_message.png)
 
 A note about the `docker-compose.yaml`: The hasura_discord_bot service passes an environment variable
 called `SYNC_ON_STARTUP` which is set to 1. It is not recommended that the bot sync its commands every startup, however
@@ -211,28 +211,28 @@ for the hasura_discord_bot service is started with environment variable SYNC_ON_
 startup. After the bot has synced, and you have access to the `/update` command in the Discord server, you can remove
 this environment variable to follow recommended practices and avoid rate-limits.
 
-## Testing the bot
+### Testing the bot
 
 The first test you can send to the bot, is a simple test. Use the `/hello` command. You should be able to see the
 commands via a dropdown.
 
-![Hello Command](images/hello.png)
+![Hello Command](images/setup/hello.png)
 
 The bot should reply with `Hello World!`
 
-![Hello World](images/hello_world.png)
+![Hello World](images/setup/hello_world.png)
 
 After that, you can use the `/commands` command to learn more about how the bot works.
 
-![Commands](images/commands.png)
+![Commands](images/setup/commands.png)
 
 One important test, is to see if the search works. You should be able to search the `v3` collection.
 
-![Search](images/search.png)
+![Search](images/setup/search.png)
 
 This should result in something like this.
 
-![img.png](images/search_results.png)
+![img.png](images/setup/search_results.png)
 
 For some reason, this search is occasionally flaky when the whole thing starts up for the first time. I think it
 might've been because the underlying Qdrant client initially had a timeout of 5 seconds. (Not sure why it would exceed
@@ -241,20 +241,20 @@ please open an issue and let me know!
 
 Next, you can go into the forum channel, and create a post.
 
-![Test Post](images/test_post.png)
+![Test Post](images/setup/test_post.png)
 
 The bot should respond back to you, and you can converse with it.
 
-![Bot Talks](images/bot_talk.png)
+![Bot Talks](images/setup/bot_talk.png)
 
 You can go to the Qdrant dashboard by navigating in a browser to: `http://localhost:6333/dashboard`
 
-![Qdrant Dashboard](images/qdrant_dashboard.png)
+![Qdrant Dashboard](images/setup/qdrant_dashboard.png)
 
 You can go to the Hasura Console by navigating in a browser to: `http://localhost:8080/console` and entering the default
 value: `secret`. (This is set in the `.env` file.)
 
-![Hasura Console](images/hasura_console.png)
+![Hasura Console](images/setup/hasura_console.png)
 
 You can run this query.
 
@@ -314,10 +314,25 @@ You can also see the API docs generated for the FastAPI backend in your choice o
 
 Swagger: `http://localhost:8100/docs`
 
-![Swagger](images/swagger.png)
+![Swagger](images/setup/swagger.png)
 
 Redoc: `http://localhost:8100/redoc`
 
-![Redoc](images/redoc.png)
+![Redoc](images/setup/redoc.png)
 
 Hooray! You finished the Setup!
+
+### Adding document collections:
+
+There are some useful scripts lying around...
+
+See: `hasura_discord_backend/scripts/scrape_docusaurus.py` for the script I used to scrape documentation.
+
+The requirements file for this can be found at: `hasura_discord_backend/scripts/scrape_docusaurus_requirements.txt`
+
+You can install these via:
+
+`pip3 install -r hasura_discord_backend/scripts/scrape_docusaurus_requirements.txt`
+
+Also in the `hasura_discord_backend` directory you will find some upload scripts, these upload the scraped data from a
+JSON file to the Qdrant database. See the API code for more details.
