@@ -22,6 +22,19 @@ Some things I'm interested in doing:
     2. The bot generates the answers to those questions, pretending to be the user.
     3. The bot generates the final answer having got the important information from the user.
     4. This new thread is used in the future to fine-tune the bot.
+* The current database design is very simple. It would be nice to decouple things from Discord and add an enum so that
+  the same underlying chatbot could work with multiple tools. I.e. a source field on the thread and each bot can have
+  its own task_loop.
+* It would be good to add some commands/crons for report generation, especially pretty PDFs with charts
+* We should automate the vectorization of conversations and things, and also have 1 collection with ALL incoming info in
+  it aggregated.
+* It might be good to do things like use ChatGPT to curate tags and create enriched metadata for the data-points.
+* It would be good to make it so that prompts and more of the "constants" are stored in the database. This would make it
+  simpler to do things like change the prompts for example.
+* It would be good to be able to benchmark against different prompts.
+* It would be good to add a front-end wrapper with a purpose-designed application rather than having to deal with
+  external APIs.
+* There are lots of opportunities to add slash commands and things.
 
 We host office hours every Tuesday at 10AM PST, (As in me! The guy who wrote this whole thing, *I* host the Office
 hours, so come keep me company!)
