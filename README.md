@@ -303,7 +303,7 @@ wizard than I am. And FYI using a fully-managed DBaaS doesn't count as deploying
 
 # Part 3: Designing the PostgreSQL database
 
-I work for Hasura, and our company has builtit's a pretty fantastic tool that I love to use when I'm building pretty
+I work for Hasura, and our company has built a pretty fantastic tool that I love to use when I'm building pretty
 much anything. This project is as simple as an event-driven project can be. There are five database tables, and one of
 them is a Hasura ENUM. I spun up a PostgreSQL database on Google's CloudSQL, and created a new project on Hasura Cloud,
 and got down to work. This database was much easier to deploy, just a few button clicks.
