@@ -40,9 +40,9 @@ Feel free to go over to [the production Qdrant dashboard](https://hasura-bots.co
 
 A long time ago, these guys named Larry and Sergey decided to scrape the internet to organize the world's information, and it was hard. They also organized it about as well as a 5 year old might organize their chest of toys, by generally doing their best to throw similar things into the same bucket from across the room via a giant firehose. 
 
-See, Larry and Sergey didn't have [Word2Vec](https://en.wikipedia.org/wiki/Word2vec), and they definitely didn't have the new `text-embedding-3-large` embedding-model from OpenAI, or the `gpt-4-turbo-preview`, also known as `gpt-4-0125-preview`, which [as OpenAI puts it is](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo): "The latest GPT-4 model intended to reduce cases of “laziness” where the model doesn’t complete a task and returns a maximum of 4,096 output tokens" (which by the way has a 120,000 token context window). 
+See, they didn't have [Word2Vec](https://en.wikipedia.org/wiki/Word2vec), and they definitely didn't have the new `text-embedding-3-large` embedding-model from OpenAI, or the `gpt-4-turbo-preview`, also known as `gpt-4-0125-preview`, which [as OpenAI puts it is](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo): "The latest GPT-4 model intended to reduce cases of “laziness” where the model doesn’t complete a task and returns a maximum of 4,096 output tokens" (which by the way has a 120,000 token context window). 
 
-What a perfect and beautiful storm. It's not that the spider algorithm wasn't great for crawling the 🕸. Larry and Sergey just didn't have a 🧠. Wait... no, that didn't come out right. What I mean to say is, using AI, we can sieve the data that comes through the firehose as it comes through, and create semantic embeddings via word2vec. And _then _create our own purpose-specific mini-Google that comes with a support bot, kind of like Clippy, Siri, or Alexa (but if any of those were actually good), and currently minus the voice activation. But I could look into adding that, all that would take is a pinch of ffmpeg after all.
+What a perfect and beautiful storm. It's not that the spider algorithm wasn't great for crawling the 🕸. I guess you could say the early Google team just didn't have a 🧠. Wait... no, that didn't come out right. What I mean to say is, using AI, we can sieve the data that comes through the firehose as it comes through, and create semantic embeddings via word2vec. And _then _create our own purpose-specific mini-Google that comes with a support bot, kind of like Clippy, Siri, or Alexa (but if any of those were actually good), and currently minus the voice activation. But I could look into adding that, all that would take is a pinch of ffmpeg after all.
 
 
 ### **The motivation for this project**
@@ -689,3 +689,7 @@ I've just finished the first draft of this, and I'm not sure how much editing I'
 If you liked this, and enjoyed the way I shoved it into a GitHub README, consider dropping a star on the repo, and maybe I can convince my employer to let me write all my blog posts in a README located adjacent to the code.
 
 Want more? [Read my previous piece, The Architect's Dilemma: Navigating the world of GraphQL](https://hasura.io/blog/the-architects-dilemma-navigating-the-world-of-graphql/).
+
+[Follow me on Twitter](https://twitter.com/TristenHarr)
+
+
