@@ -16,7 +16,7 @@
 * [Part 6: Talking with the Bot](#part-6-talking-with-the-bot)
 * [Some Final Thoughts](#some-final-thoughts)
 
-![alt_text](images/image1.gif "image_tooltip")
+![ChatBot GIF](images/image1.gif "ChatBot GIF")
 
 
 [This repository](https://github.com/hasura/hasura_discord_show_hn) contains the code for a Discord bot. There is a sprinkle of Nginx, a dash of Qdrant, some PostgreSQL, of course, Hasura, discord.py, a smidge of selenium and beautifulsoup, a pinch of FastAPI, and a lot of (mostly) production-ready Python with only a few dragons. 🐲
