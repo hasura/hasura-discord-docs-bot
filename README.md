@@ -27,7 +27,7 @@ This Discord bot provides the ability to search and talk to technical documentat
 
 I needed to write both a README and a blog post, so let's double up – such is life.
 
-If you're more interested in running the bot yourself, see [the adjacent SETUP.md file](https://github.com/hasura/hasura_discord_show_hn/blob/main/SETUP.md).
+If you're more interested in running the bot yourself, see [the adjacent SETUP.md file](https://github.com/hasura/hasura-discord-docs-bot/blob/main/SETUP.md).
 
 If you work for or use Hasura, ClickHouse, Turso, Fly.io, or Ionic, this bot will be useful to you, so come try it. If you use [Docusaurus](https://docusaurus.io/blog/releases/3.1), then the provided web-scraper should work for you. (Although Algolia has me curious, I found it halfway through this project. Does anyone know if it's any good? Can I get it to spit out Markdown?)
 
