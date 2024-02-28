@@ -1,4 +1,4 @@
-# An OSS Discord Bot to converse with documentation using ChatGPT + RAG
+# A Discord Bot to converse with documentation using ChatGPT + RAG
 
 ### Table of Contents
 
@@ -42,7 +42,7 @@ A long time ago, these guys named Larry and Sergey decided to scrape the interne
 
 See, they didn't have [Word2Vec](https://en.wikipedia.org/wiki/Word2vec), and they definitely didn't have the new `text-embedding-3-large` embedding-model from OpenAI, or the `gpt-4-turbo-preview`, also known as `gpt-4-0125-preview`, which [as OpenAI puts it is](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo): "The latest GPT-4 model intended to reduce cases of “laziness” where the model doesn’t complete a task and returns a maximum of 4,096 output tokens" (which by the way has a 120,000 token context window). 
 
-What a perfect and beautiful storm. It's not that the spider algorithm wasn't great for crawling the 🕸. I guess you could say the early Google team just didn't have a 🧠. Wait... no, that didn't come out right. What I mean to say is, using AI, we can sieve the data that comes through the firehose as it comes through, and create semantic embeddings via word2vec. And _then _create our own purpose-specific mini-Google that comes with a support bot, kind of like Clippy, Siri, or Alexa (but if any of those were actually good), and currently minus the voice activation. But I could look into adding that, all that would take is a pinch of ffmpeg after all.
+What a perfect and beautiful storm. It's not that the spider algorithm wasn't great for crawling the 🕸. I guess you could say the early Google team just didn't have a 🧠. Wait... no, that didn't come out right. What I mean to say is, using AI, we can sieve the data that comes through the firehose as it comes through, and create semantic embeddings via word2vec. And _then_ create our own purpose-specific mini-Google that comes with a support bot, kind of like Clippy, Siri, or Alexa (but if any of those were actually good), and currently minus the voice activation. But I could look into adding that, all that would take is a pinch of ffmpeg after all.
 
 
 ### **The motivation for this project**
@@ -53,10 +53,7 @@ For every request that _can't_ be solved via an automated response, when a commu
 
 A tool such as this makes support an even more vital and helpful role, as it creates incentives to find correct reproducible solutions over quick solutions – even though currently support roles often are called in when things are on fire and people are in panic mode. This motivates all team members to properly solve each problem because all problems only need to be solved one time. 
 
-Another bonus: By providing a searchable history of all previous inquiries, you can build the help you want to receive. I've not yet fine-tuned this bot, because I need people to create and vote on inquiries to collect the data. Conversational-style threads will be best, and it might be nice to curate the threads after the fact with a GPT comb-over. The result? \
-
-
-
+Another bonus: By providing a searchable history of all previous inquiries, you can build the help you want to receive. I've not yet fine-tuned this bot, because I need people to create and vote on inquiries to collect the data. Conversational-style threads will be best, and it might be nice to curate the threads after the fact with a GPT comb-over. The result?
 
 * One model fine-tuned to editorialize the conversation. 
 * One model fine-tuned to create lists of disparities in docs. 
@@ -64,7 +61,7 @@ Another bonus: By providing a searchable history of all previous inquiries, you 
 
 In this scenario, people become curators of information rather than rote secretaries. Information doesn't get lost, and you can copy customer-interaction flows. Almost like a compile step. Imagine taking 10 models and layering them to chunk down information. If you build good datasets of the workflow in action, you could revolutionize the way information moves.
 
-It's a very different world today than it was when Larry and Sergey first created Google. In the modern world, we have lots of very powerful tools at our disposal and the chips in our home computers are multiple orders of magnitude more capable than they were 25 years ago. 
+It's a very different world today than it was when Google was first created. In the modern world, we have lots of very powerful tools at our disposal and the chips in our home computers are multiple orders of magnitude more capable than they were 25 years ago. 
 
 A new age, a new era is upon us! To truly grasp what I'm getting at, look at how you can now visually identify semantic gaps in your documentation. 
 
@@ -358,9 +355,7 @@ I'll now go over the first two endpoints, which happen to be the most important 
 
 ## The `/upload_documents` endpoint
 
-Originally, the documents were a list that I uploaded as a batch, and while I could've used uuids in
-
-the [Qdrant vector database connector](https://github.com/hasura/ndc-qdrant) I have been working on, I made the ID's integers since I had to choose a default string or integer, and I happened to choose integer. However, I didn't like just randomly generating an integer like you would with uuid's since I'd likely end up with collisions. 
+Originally, the documents were a list that I uploaded as a batch, and while I could've used uuids in the [Qdrant vector database connector](https://github.com/hasura/ndc-qdrant) I have been working on, I made the ID's integers since I had to choose a default string or integer, and I happened to choose integer. However, I didn't like just randomly generating an integer like you would with uuid's since I'd likely end up with collisions. 
 
 So the IDs ended up being chronological, so you pass the endpoint a single document, it will chunk it and upload as many points as it takes to fully embed the document and return the ID the next point should use. Inefficient, sure, but it gets the job done, and it's pretty simple to fix up into a batch endpoint later.
 
