@@ -1,25 +1,6 @@
-# A Discord Bot to converse with documentation using ChatGPT + RAG
+# A Discord Bot to converse with documentation using GPT-4 + RAG
 
-### Table of Contents
-
-* [Introduction](#an-oss-discord-bot-to-converse-with-documentation-using-chatgpt--rag)
-    * [Table of Contents](#table-of-contents)
-    * [Beyond the Page: Crafting Our Own Conversational Google](#beyond-the-page-crafting-our-own-conversational-google)
-    * [The Motivation for This Project](#the-motivation-for-this-project)
-* [Part 1: Scraping the Documentation](#part-1-scraping-the-documentation)
-* [Part 2: Deploying the Database](#part-2-deploying-the-database)
-* [Part 3: Designing the PostgreSQL Database](#part-3-designing-the-postgresql-database)
-* [Part 4: The Backend API](#part-4-the-backend-api)
-    * [The `/upload_documents` Endpoint](#the-uploaddocuments-endpoint)
-    * [The `/new_message_event` Endpoint](#the-newmessageevent-endpoint)
-* [Part 5: Building the Bot](#part-5-building-the-bot)
-* [Part 6: Talking with the Bot](#part-6-talking-with-the-bot)
-* [Some Final Thoughts](#some-final-thoughts)
-
-![ChatBot GIF](images/image1.gif "ChatBot GIF")
-
-
-[This repository](https://github.com/hasura/hasura_discord_show_hn) contains the code for a Discord bot. There is a sprinkle of Nginx, a dash of Qdrant, some PostgreSQL, of course, Hasura, discord.py, a smidge of selenium and beautifulsoup, a pinch of FastAPI, and a lot of (mostly) production-ready Python with only a few dragons. 🐲
+[This repository](https://github.com/hasura/hasura-discord-docs-bot) contains the code for a Discord bot. There is a sprinkle of Nginx, a dash of Qdrant, some PostgreSQL, of course, Hasura, discord.py, a smidge of selenium and beautifulsoup, a pinch of FastAPI, and a lot of (mostly) production-ready Python with only a few dragons. 🐲
 
 What might this bot do you wonder? I shall tell you! It's magic. 🧙‍♂️🪄
 
@@ -31,10 +12,25 @@ If you're more interested in running the bot yourself, see [the adjacent SETUP.m
 
 If you work for or use Hasura, ClickHouse, Turso, Fly.io, or Ionic, this bot will be useful to you, so come try it. If you use [Docusaurus](https://docusaurus.io/blog/releases/3.1), then the provided web-scraper should work for you. (Although Algolia has me curious, I found it halfway through this project. Does anyone know if it's any good? Can I get it to spit out Markdown?)
 
-Also, I've always been a production or GTFO kind of person, therefore the database I've deployed for this has a READONLY api-key. The bot runs on the [Hasura Discord server](https://discord.gg/hasura). Just use `/commands` in a Discord channel to see the capabilities. To converse with the bot, ask a Hasura-related question in either the v2-help-forum or the v3-help-forum.
+Also, I've always been a production or GTFO kind of person, therefore the database I've deployed for this has a READONLY api-key. The bot runs on the [Hasura Discord server](https://discord.gg/hasura). Just use `/commands` in a Discord channel to see the capabilities. To converse with the bot, ask a Hasura-related question in either the [v2-help-forum](https://discord.com/channels/407792526867693568/1205630815690817536) or the [v3-help-forum](https://discord.com/channels/407792526867693568/1205357708677480468).
 
 Feel free to go over to [the production Qdrant dashboard](https://hasura-bots.com/dashboard) and use the following READONLY API key ```95a7cc2e3087b032edd2fd71de5b3a8d48313d601e6ce70b538ce5c8f730d93d``` to peruse the vector database points. (Hint: It is a database full of embeddings of scraped technical documentation written in markdown.)
 
+### Table of Contents
+
+* [Beyond the Page: Crafting Our Own Conversational Google](#beyond-the-page-crafting-our-own-conversational-google)
+* [The Motivation for This Project](#the-motivation-for-this-project)
+* [Part 1: Scraping the Documentation](#part-1-scraping-the-documentation)
+* [Part 2: Deploying the Database](#part-2-deploying-the-database)
+* [Part 3: Designing the PostgreSQL Database](#part-3-designing-the-postgresql-database)
+* [Part 4: The Backend API](#part-4-the-backend-api)
+    * [The `/upload_documents` Endpoint](#the-uploaddocuments-endpoint)
+    * [The `/new_message_event` Endpoint](#the-newmessageevent-endpoint)
+* [Part 5: Building the Bot](#part-5-building-the-bot)
+* [Part 6: Talking with the Bot](#part-6-talking-with-the-bot)
+* [Some Final Thoughts](#some-final-thoughts)
+
+![ChatBot GIF](images/image1.gif "ChatBot GIF")
 
 ### **Beyond the page: Crafting our own conversational Google**
 
