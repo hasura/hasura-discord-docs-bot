@@ -16,6 +16,8 @@ Also, I've always been a production or GTFO kind of person, therefore the databa
 
 Feel free to go over to [the production Qdrant dashboard](https://hasura-bots.com/dashboard) and use the following READONLY API key ```95a7cc2e3087b032edd2fd71de5b3a8d48313d601e6ce70b538ce5c8f730d93d``` to peruse the vector database points. (Hint: It is a database full of embeddings of scraped technical documentation written in markdown.)
 
+**Watch the below video to see how it works**
+
 [![Video](https://img.youtube.com/vi/wjZ4eOlNJqw/maxresdefault.jpg)](https://www.youtube.com/watch?v=wjZ4eOlNJqw)
 
 ### Table of Contents
